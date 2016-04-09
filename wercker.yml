@@ -149,10 +149,3 @@ run-tests:
                 cd $CODE_PATH
                 ./test-all.sh
 
-scratch:
-  box:
-    id: alpine
-    cmd: /bin/sh
-  steps:
-    - internal/docker-scratch-push:
-        repository: quay.io/go/fuckurself
