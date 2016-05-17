@@ -59,6 +59,22 @@ func (s *DockerSuite) TestPing() {
 	s.Nil(err)
 }
 
+// Another test to see if password interpolation is blowing up
+func (s *DockerSuite) TestPasswordInterpolation() {
+	env := util.NewEnvironment("X_PRIVATE=somethingwitha$sign", "XXX_OTHER=somethingwitha#sign")
+	testStep := DockerPushStep{
+		data: map[string]string{
+			"username": "$PRIVATE",
+			"password": "$OTHER",
+		},
+	}
+	env.Update(env.GetPassthru().Ordered())
+	env.Hidden.Update(env.GetHiddenPassthru().Ordered())
+	testStep.InitEnv(env)
+	s.Equal("somethingwitha$sign", testStep.username)
+	s.Equal("somethingwitha#sign", testStep.password)
+}
+
 func (s *DockerSuite) TestGenerateDockerID() {
 	id, err := GenerateDockerID()
 	s.Require().NoError(err, "Unable to generate Docker ID")
