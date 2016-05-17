@@ -50,7 +50,7 @@ func (s *EnvironmentSuite) TestInterpolate() {
 	//tt.Equal(env.Interpolate("$PUBLIC"), "foo", "Non-prefixed should alias any X_ prefixed vars.")
 	s.Equal(env.Interpolate("${PUBLIC}"), "foo", "Alternate shell style vars should work.")
 
-	// NB: stipping only works because we cann Update with the passthru
+	// NB: stipping only works because we can Update with the passthru
 	// function above
 	s.Equal(env.Interpolate("$PRIVATE"), "zed", "Xs should be stripped.")
 	s.Equal(env.Interpolate("$OTHER"), "otter", "XXXs should be stripped.")
@@ -67,4 +67,15 @@ func (s *EnvironmentSuite) TestExport() {
 	env := NewEnvironment("PUBLIC=foo", "X_PRIVATE=zed")
 	expected := []string{`export PUBLIC="foo"`, `export X_PRIVATE="zed"`}
 	s.Equal(env.Export(), expected)
+}
+
+// Test to see if using special chars such as $ and # are interpolated properly
+// see: wercker/wercker #158
+func (s *EnvironmentSuite) TestSpecialChars() {
+	env := NewEnvironment("X_PRIVATE=somethingwitha$sign", "XXX_OTHER=somethingwitha#sign")
+	env.Update(env.GetPassthru().Ordered())
+	env.Hidden.Update(env.GetHiddenPassthru().Ordered())
+
+	s.Equal(env.Interpolate("$PRIVATE"), "somethingwitha$sign", "we should interploate $ correctly")
+	s.Equal(env.Interpolate("$OTHER"), "somethingwitha#sign", "we should interplate # correctly")
 }
