@@ -17,6 +17,7 @@ package util
 import (
 	"fmt"
 	"os"
+	"regexp"
 	"strings"
 )
 
@@ -70,11 +71,28 @@ func (e *Environment) Get(key string) string {
 	return ""
 }
 
+// escape env var value before sending to docker
+// We have no idea which shell we're sending to, so let's hope for the best...
+func escapeEnvValue(s string) string {
+	// just escape all single quotes and wrap the whole thing in single quotes
+	// from http://tldp.org/LDP/abs/html/quotingvar.html
+	// Single quotes (' ') operate similarly to double quotes, but do not
+	// permit referencing variables, since the special meaning of $ is turned
+	// off. Within single quotes, every special character except ' gets
+	// interpreted literally. Consider single quotes ("full quoting") to be
+	// a stricter method of quoting than double quotes ("partial quoting").
+	//
+	// So we need to s/'/'"'"'/g
+	re := regexp.MustCompile("'")
+	return fmt.Sprintf("'%s'", re.ReplaceAllLiteralString(s, `'"'"'`))
+}
+
 // Export the environment as shell commands for use with Session.Send*
 func (e *Environment) Export() []string {
 	s := []string{}
 	for _, key := range e.Order {
-		s = append(s, fmt.Sprintf(`export %s=%q`, key, e.Map[key]))
+		escaped := escapeEnvValue(e.Map[key])
+		s = append(s, fmt.Sprintf(`export %s=%s`, key, escaped))
 	}
 	return s
 }
