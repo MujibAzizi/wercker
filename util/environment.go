@@ -17,7 +17,6 @@ package util
 import (
 	"fmt"
 	"os"
-	"regexp"
 	"strings"
 )
 
@@ -83,8 +82,7 @@ func escapeEnvValue(s string) string {
 	// a stricter method of quoting than double quotes ("partial quoting").
 	//
 	// So we need to s/'/'"'"'/g
-	re := regexp.MustCompile("'")
-	return fmt.Sprintf("'%s'", re.ReplaceAllLiteralString(s, `'"'"'`))
+	return fmt.Sprintf("'%s'", strings.Replace(s, "'", `'"'"'`, -1))
 }
 
 // Export the environment as shell commands for use with Session.Send*
