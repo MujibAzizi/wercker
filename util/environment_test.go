@@ -68,3 +68,9 @@ func (s *EnvironmentSuite) TestExport() {
 	expected := []string{`export PUBLIC="foo"`, `export X_PRIVATE="zed"`}
 	s.Equal(env.Export(), expected)
 }
+
+func (s *EnvironmentSuite) TestExportMultiline() {
+	env := NewEnvironment("MULTI=a\nb\nc", "SINGLE=abc")
+	expected := []string{"export MULTI='a\nb\nc'", "export SINGLE=\"abc\""}
+	s.Equal(env.Export(), expected)
+}
