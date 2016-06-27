@@ -74,7 +74,13 @@ func (e *Environment) Get(key string) string {
 func (e *Environment) Export() []string {
 	s := []string{}
 	for _, key := range e.Order {
-		s = append(s, fmt.Sprintf(`export %s=%q`, key, e.Map[key]))
+		val := e.Map[key]
+		if strings.Contains(val, "\n") {
+			// multiline string, need to wrap in '
+			s = append(s, fmt.Sprintf(`export %s='%s'`, key, val))
+		} else {
+			s = append(s, fmt.Sprintf(`export %s=%q`, key, val))
+		}
 	}
 	return s
 }
