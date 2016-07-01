@@ -154,9 +154,13 @@ func (b *InternalServiceBox) Run(ctx context.Context, env *util.Environment, lin
 	}
 
 	binds, err := b.binds(env)
+	
+	if err != nil {
+		return nil, err
+	}
 
 	hostConfig := &docker.HostConfig{
-		Binds:		binds,
+		Binds:	      binds,
 		DNS:          b.dockerOptions.DockerDNS,
 		PortBindings: portBindings(portsToBind),
 		Links:        links,
